@@ -1,0 +1,54 @@
+INFO 10-16 18:28:46 [__init__.py:216] Automatically detected platform cuda.
+[1;36m(APIServer pid=3474104)[0;0m INFO 10-16 18:28:51 [api_server.py:1839] vLLM API server version 0.11.0
+[1;36m(APIServer pid=3474104)[0;0m INFO 10-16 18:28:51 [utils.py:233] non-default args: {'model': '/scratch-node/dris.15397695/llama3_8b_gsm8k', 'dtype': 'float16', 'max_model_len': 4096, 'tensor_parallel_size': 2, 'swap_space': 8.0}
+[1;36m(APIServer pid=3474104)[0;0m Traceback (most recent call last):
+[1;36m(APIServer pid=3474104)[0;0m   File "<frozen runpy>", line 198, in _run_module_as_main
+[1;36m(APIServer pid=3474104)[0;0m   File "<frozen runpy>", line 88, in _run_code
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/vllm/entrypoints/openai/api_server.py", line 1953, in <module>
+[1;36m(APIServer pid=3474104)[0;0m     uvloop.run(run_server(args))
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/uvloop/__init__.py", line 105, in run
+[1;36m(APIServer pid=3474104)[0;0m     return runner.run(wrapper())
+[1;36m(APIServer pid=3474104)[0;0m            ^^^^^^^^^^^^^^^^^^^^^
+[1;36m(APIServer pid=3474104)[0;0m   File "/sw/arch/RHEL8/EB_production/2023/software/Python/3.11.3-GCCcore-12.3.0/lib/python3.11/asyncio/runners.py", line 118, in run
+[1;36m(APIServer pid=3474104)[0;0m     return self._loop.run_until_complete(task)
+[1;36m(APIServer pid=3474104)[0;0m            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(APIServer pid=3474104)[0;0m   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/uvloop/__init__.py", line 61, in wrapper
+[1;36m(APIServer pid=3474104)[0;0m     return await main
+[1;36m(APIServer pid=3474104)[0;0m            ^^^^^^^^^^
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/vllm/entrypoints/openai/api_server.py", line 1884, in run_server
+[1;36m(APIServer pid=3474104)[0;0m     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/vllm/entrypoints/openai/api_server.py", line 1902, in run_server_worker
+[1;36m(APIServer pid=3474104)[0;0m     async with build_async_engine_client(
+[1;36m(APIServer pid=3474104)[0;0m   File "/sw/arch/RHEL8/EB_production/2023/software/Python/3.11.3-GCCcore-12.3.0/lib/python3.11/contextlib.py", line 204, in __aenter__
+[1;36m(APIServer pid=3474104)[0;0m     return await anext(self.gen)
+[1;36m(APIServer pid=3474104)[0;0m            ^^^^^^^^^^^^^^^^^^^^^
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/vllm/entrypoints/openai/api_server.py", line 180, in build_async_engine_client
+[1;36m(APIServer pid=3474104)[0;0m     async with build_async_engine_client_from_engine_args(
+[1;36m(APIServer pid=3474104)[0;0m   File "/sw/arch/RHEL8/EB_production/2023/software/Python/3.11.3-GCCcore-12.3.0/lib/python3.11/contextlib.py", line 204, in __aenter__
+[1;36m(APIServer pid=3474104)[0;0m     return await anext(self.gen)
+[1;36m(APIServer pid=3474104)[0;0m            ^^^^^^^^^^^^^^^^^^^^^
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/vllm/entrypoints/openai/api_server.py", line 206, in build_async_engine_client_from_engine_args
+[1;36m(APIServer pid=3474104)[0;0m     vllm_config = engine_args.create_engine_config(usage_context=usage_context)
+[1;36m(APIServer pid=3474104)[0;0m                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/vllm/engine/arg_utils.py", line 1142, in create_engine_config
+[1;36m(APIServer pid=3474104)[0;0m     model_config = self.create_model_config()
+[1;36m(APIServer pid=3474104)[0;0m                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/vllm/engine/arg_utils.py", line 994, in create_model_config
+[1;36m(APIServer pid=3474104)[0;0m     return ModelConfig(
+[1;36m(APIServer pid=3474104)[0;0m            ^^^^^^^^^^^^
+[1;36m(APIServer pid=3474104)[0;0m   File "/gpfs/home6/dris/projects/Fetch/.venv/lib/python3.11/site-packages/pydantic/_internal/_dataclasses.py", line 121, in __init__
+[1;36m(APIServer pid=3474104)[0;0m     s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+[1;36m(APIServer pid=3474104)[0;0m pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelConfig
+[1;36m(APIServer pid=3474104)[0;0m   Value error, Invalid repository ID or local directory specified: '/scratch-node/dris.15397695/llama3_8b_gsm8k'.
+[1;36m(APIServer pid=3474104)[0;0m Please verify the following requirements:
+[1;36m(APIServer pid=3474104)[0;0m 1. Provide a valid Hugging Face repository ID.
+[1;36m(APIServer pid=3474104)[0;0m 2. Specify a local directory that contains a recognized configuration file.
+[1;36m(APIServer pid=3474104)[0;0m    - For Hugging Face models: ensure the presence of a 'config.json'.
+[1;36m(APIServer pid=3474104)[0;0m    - For Mistral models: ensure the presence of a 'params.json'.
+[1;36m(APIServer pid=3474104)[0;0m 3. For GGUF: pass the local path of the GGUF checkpoint.
+[1;36m(APIServer pid=3474104)[0;0m    Loading GGUF from a remote repo directly is not yet supported.
+[1;36m(APIServer pid=3474104)[0;0m  [type=value_error, input_value=ArgsKwargs((), {'model': ...rocessor_plugin': None}), input_type=ArgsKwargs]
+[1;36m(APIServer pid=3474104)[0;0m     For further information visit https://errors.pydantic.dev/2.12/v/value_error
+srun: error: gcn54: task 0: Exited with exit code 1
+srun: Terminating StepId=15397695.0
