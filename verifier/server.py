@@ -7,7 +7,7 @@ import torch
 from transformers import AutoConfig, AutoTokenizer, LlamaForTokenClassification
 
 # This ensures you use the full path to the folder
-model_name_or_path = "/gpfs/home6/dris/Fetch/verifier/verifier_model_A"
+model_name_or_path = "xmu-nlp/Llama-3-8b-gsm8k-value-A"
 
 
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=True)

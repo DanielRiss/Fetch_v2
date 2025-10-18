@@ -55,7 +55,7 @@ class Tree:
             return None
         return max(leaves, key=lambda n: n.value)
 
-with open('logs_15387168/15387169_test_gsm8k_beamsearch_merge_b5_t0.8.pkl', 'rb') as f:
+with open('/home/dris/projects/Fetch/search/beamsearch/logs_15440383/15440383_test_gsm8k_beamsearch_b5_t0.8.pkl', 'rb') as f:
     problems = pickle.load(f)
 
 def extract_numeric_answer(text):

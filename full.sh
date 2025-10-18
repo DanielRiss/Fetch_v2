@@ -12,8 +12,11 @@
 set -e
 
 module purge
-module load 2023
+module load 2025
+module load CUDA/12.8.0
 source ~/projects/Fetch/.venv/bin/activate
+
+export FLASHINFER_USE_TVM_CPP=0
 
 # Capture job ID and create log directory
 JOBID=${SLURM_JOB_ID}

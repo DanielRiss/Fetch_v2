@@ -29,7 +29,7 @@ BUDGET = 5
 BEAM = 5
 TEMPERATURE = 0.8
 
-data_fpath = "/gpfs/home6/dris/projects/Fetch/gsm8k/test_main.jsonl"
+data_fpath = "/home/dris/projects/Fetch/gsm8k/test_main.jsonl"
 filename = f"{JOBID}_test_gsm8k_beamsearch_b{BUDGET}_t{TEMPERATURE}.pkl"
 output_fpath = os.path.join(LOGDIR, filename)
 policy_fpath = "xmu-nlp/Llama-3-8b-gsm8k"
