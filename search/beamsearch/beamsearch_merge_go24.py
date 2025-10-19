@@ -175,9 +175,8 @@ problems = []
 with open(data_path, newline='', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     for row in reader:
-        if not row or not row[0].strip():
-            continue
-        problems.append(Tree(row[0].strip()))
+        for game in row:
+            problems.append(Tree(game.strip()))
 
 # Worker function
 def worker(tree):
