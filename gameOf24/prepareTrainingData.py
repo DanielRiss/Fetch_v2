@@ -19,6 +19,9 @@ OUTPUT_POLICY = Path(__file__).parent / "go24_policy_data.json"
 OUTPUT_VERIFIER = Path(__file__).parent / "go24_verifier_data.json"
 RANDOM_SEED = 42
 
+# Helper prompt (simplified - removed "step-by-step" instruction)
+HELPER_PROMPT = "You are playing the Game of 24. Given 4 numbers, you may use addition, subtraction, multiplication, and division to combine them to reach the target number of 24. You must use each input number exactly once and can use parentheses to define the order of operations.\n\n"
+
 random.seed(RANDOM_SEED)
 
 def load_puzzles_from_csv(csv_path):
@@ -50,7 +53,7 @@ def create_policy_data(puzzles):
         # Use all solutions for every puzzle
         for solution in puzzle_data['solutions']:
             examples.append({
-                'question': puzzle,
+                'question': f"{HELPER_PROMPT}Question: {puzzle}",
                 'answer': solution
             })
 
@@ -68,7 +71,7 @@ def generate_negative_examples(puzzle_data, all_puzzles):
         wrong_solution = other_puzzle['solutions'][0]
         if not evaluate_answer(puzzle, wrong_solution):
             examples.append({
-                'text': f"Question: {puzzle}\nAnswer: {wrong_solution}",
+                'text': f"{HELPER_PROMPT}Question: {puzzle}\nAnswer: {wrong_solution}",
                 'label': -1
             })
 
@@ -82,7 +85,7 @@ def generate_negative_examples(puzzle_data, all_puzzles):
                     if any(op in incomplete for op in ['+', '-', '*', '/']):
                         if not evaluate_answer(puzzle, incomplete):
                             examples.append({
-                                'text': f"Question: {puzzle}\nAnswer: {incomplete}",
+                                'text': f"{HELPER_PROMPT}Question: {puzzle}\nAnswer: {incomplete}",
                                 'label': -1
                             })
                             break
@@ -99,7 +102,7 @@ def generate_negative_examples(puzzle_data, all_puzzles):
 
             if not evaluate_answer(puzzle, wrong_expr):
                 examples.append({
-                    'text': f"Question: {puzzle}\nAnswer: {wrong_expr}",
+                    'text': f"{HELPER_PROMPT}Question: {puzzle}\nAnswer: {wrong_expr}",
                     'label': -1
                 })
                 break
@@ -121,7 +124,7 @@ def create_verifier_data(puzzles):
         # Positive examples (correct solutions)
         for solution in puzzle_data['solutions']:
             examples.append({
-                'text': f"Question: {puzzle}\nAnswer: {solution}",
+                'text': f"{HELPER_PROMPT}Question: {puzzle}\nAnswer: {solution}",
                 'label': 1
             })
 
