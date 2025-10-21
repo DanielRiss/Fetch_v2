@@ -11,7 +11,7 @@ model = RobertaModel.from_pretrained(model_name_or_path, device_map="auto")
 model.train()
 
 data_fpath = "/home/tzeinstra/projects/Fetch/gpqa/dataset/gpqa_training_split.csv"
-output_model_path = f"cluster/"
+output_model_path = "/home/tzeinstra/projects/Fetch/gpqa/models/emb"#f"cluster/"
 
 df = pd.read_csv(data_fpath)
 # Remove rows with missing data

@@ -38,10 +38,18 @@ HEAD_LR = 1e-5
 
 # Load model, tokenizer
 model_name = sys.argv[1]
+try:
+    tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="right")
+    tokenizer.pad_token = tokenizer.eos_token
+    print(f"Tokenizer loaded successfully")
+    print(f"Vocab size: {len(tokenizer)}")
+    print(f"Pad token: {tokenizer.pad_token}")
+except Exception as e:
+    print(f"ERROR loading tokenizer: {e}")
+    raise
 config = AutoConfig.from_pretrained(model_name)
 if config.num_labels != 1:
     config.num_labels = 1
-tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="right")
 
 class MyLlamaForTokenClassification(LlamaForTokenClassification):
     def __init__(self, config):
