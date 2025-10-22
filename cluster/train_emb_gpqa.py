@@ -2,6 +2,8 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import torch
+from torch import nn
+from torch.optim import AdamW
 from transformers import RobertaTokenizer, RobertaModel
 
 model_name_or_path ="xmu-nlp/simcse-large-gsm8k" # sup-simcse-roberta-large ?
@@ -48,9 +50,7 @@ epoch = 1
 batch_size = 128
 mini_batch_size = 16
 
-import torch
-from torch import nn
-from torch.optim import AdamW
+
 optimizer = AdamW(model.parameters(), lr=1e-6, weight_decay=0.1)
 
 # add scheduler of transformers
