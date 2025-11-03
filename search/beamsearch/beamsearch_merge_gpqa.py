@@ -35,7 +35,7 @@ data_fpath = "/home/tzeinstra/projects/Fetch/gpqa/dataset/gpqa_eval_split.csv"
 # Build a filename with the ID embedded
 filename = f"{JOBID}_test_gpqa_beamsearch_merge_b{BUDGET}_t{TEMPERATURE}.pkl"
 output_fpath = os.path.join(LOGDIR, filename)
-policy_fpath = "xmu-nlp/Llama-3-8b-gsm8k" # todo update
+policy_fpath = "meta-llama/Llama-3.1-8B-Instruct"#"xmu-nlp/Llama-3-8b-gsm8k" # todo update
 
 # Tokenizer
 tokenizer = AutoTokenizer.from_pretrained(policy_fpath)

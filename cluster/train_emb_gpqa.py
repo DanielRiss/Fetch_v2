@@ -5,6 +5,7 @@ import torch
 from torch import nn
 from torch.optim import AdamW
 from transformers import RobertaTokenizer, RobertaModel
+import pandas as pd
 
 model_name_or_path ="xmu-nlp/simcse-large-gsm8k" # sup-simcse-roberta-large ?
 
