@@ -1,6 +1,7 @@
 import os
 import json
 import pickle
+import csv
 import numpy as np
 import requests
 import time
@@ -168,12 +169,27 @@ class Tree:
         beam = sorted(candidates, key=lambda v: v.value, reverse=True)[:beam_size]
         return [v for v in beam if not v.is_leaf]
 
-# Load data
-problems = []
-with open(data_fpath) as f:
-    for line in f:
-        inst = json.loads(line)
-        problems.append(Tree(inst["question"], inst["answer"]))
+def load_csv_data(csv_fpath):
+    problems = []
+    with open(csv_fpath, encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Create Tree with question and answer
+            tree_obj = Tree(row['Question'], row['Correct Answer'])
+            
+            # Store additional metadata as attributes
+            tree_obj.incorrect_answers = [
+                row['Incorrect Answer 1'],
+                row['Incorrect Answer 2'],
+                row['Incorrect Answer 3']
+            ]
+            tree_obj.explanation = row['Explanation']
+            
+            problems.append(tree_obj)
+    return problems
+
+# Usage
+problems = load_csv_data('test_data.csv')
 
 # Worker function
 def worker(tree):

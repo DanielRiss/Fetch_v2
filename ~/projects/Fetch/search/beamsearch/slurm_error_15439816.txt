@@ -1,2 +1,0 @@
-/var/spool/slurm/slurmd/job15439816/slurm_script: line 81: kill: (735615) - No such process
-/var/spool/slurm/slurmd/job15439816/slurm_script: line 81: kill: (735616) - No such process

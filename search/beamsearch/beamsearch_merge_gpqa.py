@@ -4,6 +4,8 @@ import pickle
 import numpy as np
 import requests
 import time
+import csv
+import datetime
 from tqdm import tqdm
 import itertools
 from transformers import AutoTokenizer
@@ -20,7 +22,7 @@ SINGLE_HOST_URLS = [
 single_cycle = itertools.cycle(SINGLE_HOST_URLS)
 
 # Fetch the job ID (or fallback to timestamp)
-JOBID = os.environ.get("SLURM_JOB_ID") or os.environ.get("JOBID") or datetime.now().strftime("%Y%m%d%H%M%S")
+JOBID = os.environ.get("SLURM_JOB_ID") or os.environ.get("JOBID") or datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 LOGDIR = os.environ.get("LOGDIR", ".")
 
 # Hyperparameters
@@ -31,7 +33,7 @@ TEMPERATURE = 0.8
 DISTANCE = 0.15
 
 # File paths
-data_fpath = "/home/tzeinstra/projects/Fetch/gpqa/dataset/gpqa_eval_split.csv"
+data_fpath = "/home/dris/projects/Fetch_git/gpqa/dataset/gpqa_eval_split.csv"
 # Build a filename with the ID embedded
 filename = f"{JOBID}_test_gpqa_beamsearch_merge_b{BUDGET}_t{TEMPERATURE}.pkl"
 output_fpath = os.path.join(LOGDIR, filename)
@@ -155,8 +157,10 @@ class VirtualNode:
         self.cache.clear()
 
 class Tree:
-    def __init__(self, question, answer):
-        self.question, self.answer = question, answer
+    def __init__(self, question, answer, answer_choices):
+        self.question = question
+        self.answer = answer
+        self.answer_choices = answer_choices  # NEW: Store answer choices
         root = Node(None, 0, None, 0, self)
         self.all_nodes = [root]
         self.virtual_nodes = [VirtualNode([root])]
@@ -176,12 +180,41 @@ class Tree:
         beam = sorted(candidates, key=lambda v: v.value, reverse=True)[:beam_size]
         return [v for v in beam if not v.is_leaf]
 
-# Load data
-problems = []
-with open(data_fpath) as f:
-    for line in f:
-        inst = json.loads(line)
-        problems.append(Tree(inst["question"], inst["answer"]))
+def load_csv_data(csv_fpath):
+    """
+    Load CSV data with format:
+    Question, Correct Answer, Incorrect Answer 1, Incorrect Answer 2, Incorrect Answer 3, Explanation
+    """
+    problems = []
+    with open(csv_fpath, encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Combine all answer choices: Correct Answer + 3 Incorrect Answers
+            answer_choices = [
+                row['Correct Answer'],
+                row['Incorrect Answer 1'],
+                row['Incorrect Answer 2'],
+                row['Incorrect Answer 3']
+            ]
+            
+            # Create Tree with question, answer, and answer choices
+            tree_obj = Tree(
+                row['Question'],
+                row['Correct Answer'],
+                answer_choices
+            )
+            
+            # Store additional metadata as attributes
+            tree_obj.explanation = row['Explanation']
+            
+            problems.append(tree_obj)
+    return problems
+
+
+# Usage
+problems = load_csv_data(data_fpath)
+#problems = problems[:100]  # Keep only first 100
+
 
 # Worker function
 def worker(tree):

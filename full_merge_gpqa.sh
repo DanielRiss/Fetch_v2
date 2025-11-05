@@ -5,9 +5,9 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --job-name=Beamsearch_merge
-#SBATCH --time=03:00:00
-#SBATCH --output=~/projects/Fetch/search/beamsearch/slurm_output_%j.txt
-#SBATCH --error=~/projects/Fetch/search/beamsearch/slurm_error_%j.txt
+#SBATCH --time=08:00:00
+#SBATCH --output=/home/dris/projects/Fetch_git/search/beamsearch/slurm_output_%j.txt
+#SBATCH --error=/home/dris/projects/Fetch_git/search/beamsearch/slurm_error_%j.txt
 
 set -e
 
@@ -19,7 +19,7 @@ source ~/projects/Fetch/.venv/bin/activate
 
 # Capture job ID and create log directory
 JOBID=${SLURM_JOB_ID}
-LOGDIR=~/projects/Fetch/search/beamsearch/logs_${JOBID}
+LOGDIR=/home/dris/projects/Fetch_git/search/beamsearch/jobs_${JOBID}
 mkdir -p ${LOGDIR}
 echo "Logging into ${LOGDIR}"
 
@@ -53,7 +53,7 @@ for i in ${!VERIFIER_GPUS[@]}; do
   PORT=${VERIFIER_PORTS[$i]}
   echo "Starting verifier on GPU $GPU port $PORT…"
   export CUDA_VISIBLE_DEVICES=$GPU
-  nohup uvicorn --app-dir ~/projects/Fetch/verifier server:app \
+  nohup uvicorn --app-dir ~/projects/Fetch_git/verifier server:app \
     --host 0.0.0.0 --port $PORT --workers 1 \
     > "${LOGDIR}/verifier_${PORT}_${JOBID}.log" 2>&1 &
   VERIFIER_PIDS[$i]=$!
@@ -80,7 +80,7 @@ done
 # 3) ESM server on GPU 3
 ESM_PORT=8004
 echo "Starting ESM server on GPU 3 port $ESM_PORT with TERM trap..."
-cd ~/projects/Fetch/cluster
+cd ~/projects/Fetch_git/cluster
 
 trap '' TERM
 CUDA_VISIBLE_DEVICES="3" nohup uvicorn server_cluster:app \
@@ -94,7 +94,7 @@ sleep 5
 
 # 4) Beamsearch merge
 echo "All servers started: running beamsearch with merge"
-cd ~/projects/Fetch/search/beamsearch
+cd ~/projects/Fetch_git/search/beamsearch
 nvidia-smi > ${LOGDIR}/nvidia_smi_${JOBID}.log
 python3 -c "import torch;print(torch.cuda.device_count())" > ${LOGDIR}/num_gpus_${JOBID}.log
 
