@@ -6,8 +6,8 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --job-name=Beamsearch_merge
 #SBATCH --time=08:00:00
-#SBATCH --output=/home/dris/projects/Fetch_git/search/beamsearch/slurm_output_%j.txt
-#SBATCH --error=/home/dris/projects/Fetch_git/search/beamsearch/slurm_error_%j.txt
+#SBATCH --output=/home/tzeinstra/projects/Fetch_git/search/beamsearch/slurm_output_%j.txt
+#SBATCH --error=/home/tzeinstra/projects/Fetch_git/search/beamsearch/slurm_error_%j.txt
 
 set -e
 
@@ -19,7 +19,7 @@ source ~/projects/Fetch/.venv/bin/activate
 
 # Capture job ID and create log directory
 JOBID=${SLURM_JOB_ID}
-LOGDIR=/home/dris/projects/Fetch_git/search/beamsearch/jobs_${JOBID}
+LOGDIR=/home/tzeinstra/projects/Fetch_git/search/beamsearch/jobs_${JOBID}
 mkdir -p ${LOGDIR}
 echo "Logging into ${LOGDIR}"
 
