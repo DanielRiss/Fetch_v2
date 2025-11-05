@@ -14,7 +14,7 @@ set -e
 module purge
 module load 2025
 module load CUDA/12.8.0
-source ~/projects/Fetch/.venv/bin/activate
+source /home/tzeinstra/projects/Fetch/.venv/bin/activate
 
 
 # Capture job ID and create log directory
