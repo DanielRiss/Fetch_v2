@@ -53,7 +53,7 @@ for i in ${!VERIFIER_GPUS[@]}; do
   PORT=${VERIFIER_PORTS[$i]}
   echo "Starting verifier on GPU $GPU port $PORT…"
   export CUDA_VISIBLE_DEVICES=$GPU
-  nohup uvicorn --app-dir ~/projects/Fetch_git/verifier server:app \
+  nohup uvicorn --app-dir ~/projects/Fetch_git/verifier server_experimental:app \
     --host 0.0.0.0 --port $PORT --workers 1 \
     > "${LOGDIR}/verifier_${PORT}_${JOBID}.log" 2>&1 &
   VERIFIER_PIDS[$i]=$!
