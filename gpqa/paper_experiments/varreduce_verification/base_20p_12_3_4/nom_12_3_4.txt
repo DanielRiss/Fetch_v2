@@ -1,0 +1,64 @@
+
+================================================================================
+COMPREHENSIVE INFERENCE ANALYTICS - BASELINE
+================================================================================
+
+1. SEARCH TREE STATISTICS
+--------------------------------------------------------------------------------
+   Total problems:                 20
+   Total nodes generated:          2720
+   Avg nodes per problem:          136.00
+   Avg leaf nodes per problem:     0.00
+   Avg branching factor:           2720.00
+   Avg reasoning path length:      3.89 steps
+   Max depth reached:              10 steps
+
+2. NODE MERGING STATISTICS (ESM Clustering)
+--------------------------------------------------------------------------------
+   Nodes before merging:           0
+   Nodes after merging:            0
+   Nodes merged (reduction):       0
+   Merge efficiency:               0.0%
+   Reduction ratio:                0.00x
+   Avg cluster size:               0.00 nodes/cluster
+
+3. VERIFIER SCORE STATISTICS
+--------------------------------------------------------------------------------
+   Total verifier calls:           2720
+   Avg verifier score:             0.3201
+   Score std deviation:            0.2079
+   Score range:                    [0.0000, 1.0000]
+   Score variance:                 0.043203
+
+4. ACCURACY METRICS
+--------------------------------------------------------------------------------
+   Accuracy:                       0.0%
+   Correct predictions:            0/20
+   
+5. TIMING BREAKDOWN
+--------------------------------------------------------------------------------
+   Total execution time:           7449.5 seconds
+   Policy generation time:         95.0% (7077.0s)
+   Verifier scoring time:          5.0% (372.5s)
+   ESM clustering time:            0.0% (0.0s)
+   
+   Policy call statistics:
+     - Total calls:                2700
+     - Avg time per call:          2.621s
+   
+   Verifier call statistics:
+     - Total calls:                2700
+     - Avg time per call:          0.138s
+   
+   ESM call statistics:
+     - Total calls:                0
+     - Avg time per call:          0.000s
+
+6. PER-PROBLEM BREAKDOWN
+--------------------------------------------------------------------------------
+   Avg tokens generated:           22733
+   Avg policy calls:               135.0
+   Avg value calls:                135.0
+   Avg ESM calls:                  0.0
+
+================================================================================

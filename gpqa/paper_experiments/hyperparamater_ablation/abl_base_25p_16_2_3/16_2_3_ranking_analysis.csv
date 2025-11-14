@@ -1,0 +1,26 @@
+Tree Index,Found Correct,Top-1 Correct,Top-5 Correct,Top-10 Correct,Rank of Best Correct,Score of Best Correct,Score of Best Overall,Score Ratio,Num Correct Outputs,Total Outputs
+0,False,False,False,False,,,-1,0.0,0,2
+1,False,False,False,False,,,-1,0.0,0,2
+2,True,True,True,True,1,-1,-1,1.0,2,2
+3,True,True,True,True,1,-1,-1,1.0,2,2
+4,False,False,False,False,,,-1,0.0,0,2
+5,False,False,False,False,,,-1,0.0,0,3
+6,True,False,True,True,2,-1,-1,1.0,1,3
+7,False,False,False,False,,,-1,0.0,0,4
+8,False,False,False,False,,,0.2713623046875,0.0,0,36
+9,True,True,True,True,1,0.574951171875,0.574951171875,1.0,25,28
+10,True,False,False,True,8,-1,0.839111328125,-1.1917369799243527,4,15
+11,False,False,False,False,,,0.5765380859375,0.0,0,32
+12,True,True,True,True,1,1.0,1.0,1.0,29,29
+13,True,True,True,True,1,0.42633056640625,0.42633056640625,1.0,19,19
+14,True,True,True,True,1,0.542724609375,0.542724609375,1.0,14,17
+15,True,True,True,True,1,0.60418701171875,0.60418701171875,1.0,6,23
+16,False,False,False,False,,,0.76416015625,0.0,0,25
+17,True,False,False,True,9,0.325439453125,0.41644287109375,0.7814744247398505,2,25
+18,True,True,True,True,1,0.46197509765625,0.46197509765625,1.0,25,25
+19,True,False,False,False,22,-1,1.0,-1.0,1,22
+20,True,False,False,False,14,0.318115234375,0.48095703125,0.6614213197969543,7,27
+21,True,False,False,False,16,-1,0.48785400390625,-2.0497935693732017,4,26
+22,True,False,True,True,2,1.0,1.0,1.0,7,25
+23,True,False,False,True,7,0.18505859375,0.239990234375,0.7711088504577823,14,35
+24,True,False,False,True,7,0.380126953125,1.0,0.380126953125,6,29
