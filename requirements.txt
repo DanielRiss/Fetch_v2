@@ -1,0 +1,163 @@
+# Requirements for Game of 24 and GPQA FETCH Framework
+# Supports both benchmark evaluations with all necessary dependencies
+
+# ============================================================================
+# CORE DEPENDENCIES - Deep Learning & Model Management
+# ============================================================================
+
+# PyTorch (GPU computing, must be installed first)
+torch>=2.0.0
+torchvision>=0.15.0  # For model loading utilities
+torchaudio>=2.0.0    # Included with PyTorch
+
+# Hugging Face Transformers (LLM loading, tokenization)
+transformers>=4.36.0
+tokenizers>=0.14.0
+
+# Parameter-Efficient Fine-Tuning (LoRA adapters)
+peft>=0.7.0
+
+# ============================================================================
+# TRAINING & DISTRIBUTED EXECUTION
+# ============================================================================
+
+# Training orchestration
+trl>=0.7.0           # Transformers Reinforcement Learning
+datasets>=2.14.0     # Dataset loading and processing
+accelerate>=0.24.0   # Multi-GPU/distributed training
+
+# Optimization & learning rate scheduling
+bitsandbytes>=0.41.0 # 8-bit optimizers (optional but recommended)
+
+# ============================================================================
+# WEB SERVICES & API SERVERS
+# ============================================================================
+
+# FastAPI framework for serving models
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0  # ASGI server with uvloop
+pydantic>=2.0.0      # Request/response validation
+
+# HTTP client for inter-service communication
+requests>=2.31.0
+aiohttp>=3.9.0       # Async HTTP (optional, for future scaling)
+
+# ============================================================================
+# LLM INFERENCE OPTIMIZATION
+# ============================================================================
+
+# vLLM for efficient batched inference (OPTIONAL, for GPQA)
+# vllm>=0.2.0  # Uncomment if using vLLM policy server
+
+# Quantization and memory optimization
+# awq>=0.1.0         # Quantization (optional)
+# bitsandbytes>=0.41.0  # Already included above
+
+# ============================================================================
+# DATA PROCESSING & UTILITIES
+# ============================================================================
+
+# Numerical computing
+numpy>=1.24.0
+scipy>=1.11.0        # Scientific computing utilities
+
+# Data manipulation
+pandas>=2.0.0        # CSV reading, data analysis
+python-csv-merge>=0.2.0  # CSV utilities (optional)
+
+# Progress bars and logging
+tqdm>=4.66.0         # Progress visualization
+loguru>=0.7.0        # Advanced logging (optional)
+
+# ============================================================================
+# EMBEDDING & SEMANTIC MERGING (GPQA specific)
+# ============================================================================
+
+# Sentence embeddings for ESM clustering
+sentence-transformers>=2.2.0  # Used for semantic merging
+
+# Clustering and similarity
+scikit-learn>=1.3.0  # K-means, hierarchical clustering, metrics
+scipy>=1.11.0        # Already included above
+
+# ============================================================================
+# ANALYSIS & VISUALIZATION
+# ============================================================================
+
+# Results analysis
+matplotlib>=3.7.0    # Plotting and visualization
+seaborn>=0.12.0      # Statistical visualization
+plotly>=5.17.0       # Interactive plots (optional)
+
+# Results storage and loading
+pickle-mixin>=1.0.0  # Pickle utilities (optional)
+
+# Statistical analysis
+scipy>=1.11.0        # Already included above
+statsmodels>=0.14.0  # Statistical modeling (optional)
+
+# ============================================================================
+# DEVELOPMENT & DEBUGGING
+# ============================================================================
+
+# Jupyter support (optional, for interactive development)
+# jupyter>=1.0.0
+# ipython>=8.0.0
+# jupyterlab>=4.0.0
+
+# Code formatting and linting (optional)
+# black>=23.0.0
+# flake8>=6.0.0
+# pylint>=2.17.0
+
+# ============================================================================
+# HARDWARE-SPECIFIC (for Snellius/GPU nodes)
+# ============================================================================
+
+# CUDA utilities (usually pre-installed on HPC clusters)
+# cudatoolkit>=12.0  # Typically managed by module system on Snellius
+# cudnn>=8.0         # Usually provided by CUDA module
+
+# ============================================================================
+# INSTALLATION NOTES
+# ============================================================================
+
+# For GPU support (required for both Game of 24 and GPQA):
+# Install PyTorch with CUDA support FIRST before other packages
+# Example (for CUDA 12.1):
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+#
+# On Snellius, load CUDA module first:
+#   module load CUDA/12.2.0
+#   pip install -r requirements.txt
+#
+# For CPU-only (not recommended for LLMs, but possible for testing):
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+#
+# For quantized/memory-efficient inference on limited resources:
+#   Uncomment bitsandbytes and awq lines above
+#
+# For vLLM policy server on GPQA:
+#   Uncomment vllm line above (requires >= 40GB VRAM for Llama-8B)
+
+# ============================================================================
+# OPTIONAL DEPENDENCIES (uncomment as needed)
+# ============================================================================
+
+# For distributed training on multiple nodes
+# nccl>=2.18.0       # NVIDIA Collective Communications Library
+
+# For advanced monitoring and profiling
+# tensorboard>=2.13.0
+# wandb>=0.15.0      # Weights & Biases experiment tracking
+
+# For machine learning operations
+# mlflow>=2.8.0      # MLflow for tracking experiments
+
+# For database storage of results
+# sqlalchemy>=2.0.0
+# psycopg2-binary>=2.9.0  # PostgreSQL adapter
+
+# For advanced clustering algorithms
+# hdbscan>=0.8.0
+# faiss-cpu>=1.7.0 or faiss-gpu>=1.7.0  # Facebook AI Similarity Search

@@ -1,103 +1,92 @@
-# Game of 24 - Policy Fine-Tuning and Beam Search
+# FETCH Framework: Cross-Domain Evaluation on Game of 24 and GPQA
 
-This repository contains code for running Game of 24 beam search inference using our fine-tuned Llama 3.1-8B policy model. 
+This repository contains code for evaluating the FETCH (Faster Exploration and Tree-Cut Heuristics) framework on two reasoning benchmarks: Game of 24 and GPQA. The implementation demonstrates how variance reduction and semantic merging techniques can improve Tree-of-Thought reasoning across different domains.
 
-**Important**: The policy model achieved 0% accuracy on the benchmark (0/100 problems solved). It fails at the final 2→1 consolidation step, indicating Game of 24 is capacity-bound and requires larger models.
+---
 
-## What is Game of 24?
+## Part 1: Game of 24 - Policy Fine-Tuning and Beam Search
+
+Game of 24 is a mathematical reasoning task requiring systematic exploration of a large solution space. This section evaluates a fine-tuned Llama 3.1-8B policy model.
+
+### What is Game of 24?
 
 Given four numbers, combine them using +, −, ×, ÷ to reach exactly 24. Each number must be used exactly once.
 
 **Example**: Input `1 1 4 6` → Solution `(6 - 1) × (4 + 1) = 24`
 
-## Files
+### Results & Limitations
+
+**Accuracy: 0/100 (0%)**
+
+The policy model achieved 0% accuracy on the benchmark (0/100 problems solved) despite fine-tuning on 300K arithmetic examples. Analysis revealed two key failure modes:
+
+1. **Incomplete Reasoning Chains**: The model succeeds at 4→3→2 reductions but fails at the final 2→1 consolidation step. Mean tree depth: 3.24 (expected: 3.0).
+2. **Policy Collapse at 2-Number States**: When facing two numbers, the model often stops exploring after the first failed move.
+
+**Capacity Gap**: GPT-4 with Tree-of-Thought achieves 74% accuracy (Yao et al., 2023), while our 8B model achieves 0%. This strongly suggests Game of 24 is **capacity-bound** and requires significantly larger models.
+
+### Game of 24 Files
 
 | File | Purpose |
 |------|---------|
-| `policy_inference.py` | Core inference engine (loads model, generates moves, caches results) |
+| `policy_inference.py` | Core inference engine (loads model, generates 18 candidate moves, caches results) |
 | `vllm_policy_server.py` | HTTP server wrapping policy inference (vLLM-compatible API) |
 | `server.py` | Simple heuristic verifier (scores states based on proximity to 24) |
 | `beamsearch_full_infrastructure.py` | Main beam search orchestrator |
-| `run.sh` | Batch script for Snellius (SLURM) |
+| `beamsearch_full_infrastructure.sbatch` | Batch script for Snellius (SLURM) |
 
-## Quick Start
+### Quick Start - Game of 24
 
-**Information**: The dataset that we used to fine-tune the model can also be found on Huggingface, and was generated using 1262 games, scraped from 4nums.com (excluding the 100 hardest ones, which we use for inference testing). The 1262 games were disected into all possible moves from the solution, which is the dataset that we present: https://huggingface.co/datasets/DanielRisss/policytrainer_go24
-
-### 1. Download Pre-trained Model
+#### Step 1: Download Pre-trained Model
 
 The fine-tuned policy model is available on HuggingFace:
-https://huggingface.co/DanielRisss/Llama3-8b-go24
+- **Model**: [DanielRisss/Llama3-8b-go24](https://huggingface.co/DanielRisss/Llama3-8b-go24)
+- **Training Data**: [DanielRisss/policytrainer_go24](https://huggingface.co/datasets/DanielRisss/policytrainer_go24)
+  - Generated from 1262 games scraped from 4nums.com
+  - 100 hardest problems reserved for testing
+  - All possible moves from solutions extracted
 
-Make sure the model is put in the correct go24 folder, and the data paths in the batch and python files point to the correct folder.
+**Setup**: Download the model and ensure data paths in batch/Python files point to the correct folders.
 
-### 2. Running on Snellius (HPC Cluster)
+#### Step 2: Running on Snellius (Recommended)
 
-**Option A: Using Batch File (Recommended) on Snellius**
-
-Edit `beamsearch_full_infrastructure.sbatch` with your parameters and submit:
+**Option A: Using Batch File (Recommended)**
 
 ```bash
+# Edit sbatch file and submit
 sbatch beamsearch_full_infrastructure.sbatch
 ```
 
-Make sure you are connected on Snellius's SSH.
+Ensure you're connected via SSH to Snellius. This will run on GPU nodes with proper resource allocation.
 
-This will run on GPU nodes with proper resource allocation. Check `logs_<JOBID>/` for results.
+**Option B: Interactive tmux Session (Testing Only)**
 
-**Option B: Interactive tmux Session (Small Runs Only)**
-
-For testing with a small number of problems:
+For small runs (not suitable for full benchmarks):
 
 ```bash
 # Create tmux session
 tmux new-session -d -s game24
 
-# Terminal 1: Policy server
-tmux send-keys -t game24 "export POLICY_MODEL_PATH='<your-username>/<model-name>'" Enter
+# Window 1: Policy server
 tmux send-keys -t game24 "python vllm_policy_server.py" Enter
 
-# Terminal 2: Verifier server (first instance)
+# Window 2: Verifier server (instance 1)
 tmux new-window -t game24
 tmux send-keys -t game24 "PORT=8002 python server.py" Enter
 
-# Terminal 3: Verifier server (second instance)
+# Window 3: Verifier server (instance 2)
 tmux new-window -t game24
 tmux send-keys -t game24 "PORT=8003 python server.py" Enter
 
-# Terminal 4: Beam search (run on subset of problems)
+# Window 4: Beam search (test run)
 tmux new-window -t game24
 tmux send-keys -t game24 "python beamsearch_full_infrastructure.py --num_problems 5" Enter
 
-# Monitor
+# View progress
 tmux attach -t game24
 ```
 
-**Warning**: tmux mode is slow and not suitable for full benchmark runs. Use Snellius batch submission for replicating our study.
-
-## Setup
-
-### Dependencies
-
-Run the command below in your local python install, or on a venv:
-
-```bash
-pip install -r requirements.txt
-```
-
-### Environment Variables
-
-```bash
-# Model path (HuggingFace model ID)
-export POLICY_MODEL_PATH="<your-username>/<model-name>"
-
-# Optional: override server endpoints
-export POLICY_SERVER="http://127.0.0.1:8000"
-export VERIFIER_1="http://127.0.0.1:8002/predict"
-export VERIFIER_2="http://127.0.0.1:8003/predict"
-```
-
-## Beam Search Parameters
+### Beam Search Parameters - Game of 24
 
 ```bash
 python beamsearch_full_infrastructure.py \
@@ -121,80 +110,177 @@ python beamsearch_full_infrastructure.py \
 | `--workers` | Parallel processes | 4 |
 | `--temperature` | Policy generation temperature | 0.8 |
 
+### Analyzing Game of 24 Results
 
-4. **Analyze tree structures** (pickled Python objects):
-  First, you should load the classes used in the main beamsearch_full_infrastructure.py, then:
-   ```python
-   import pickle
-   trees = pickle.load(open("logs_<JOBID>/beamsearch_results_<JOBID>.pkl", "rb"))
-   for tree in trees:
-       print(f"Problem: {tree.question}")
-       print(f"Nodes explored: {len(tree.all_nodes)}")
-       print(f"Max depth: {tree.return_timestep()}")
-   ```
+```python
+import pickle
 
-# GPQA - FETCH Framework Evaluation
+# Load tree structures
+trees = pickle.load(open("logs_<JOBID>/beamsearch_results_<JOBID>.pkl", "rb"))
 
-Code for evaluating the FETCH framework on GPQA (Graduate-level Python Question Answering), a dataset of 448 graduate-level multiple-choice questions in biology, physics, and chemistry.
+# Analyze each problem
+for tree in trees:
+    print(f"Problem: {tree.question}")
+    print(f"Nodes explored: {len(tree.all_nodes)}")
+    print(f"Max depth: {tree.return_timestep()}")
+```
 
-## Dataset Overview
+---
+
+## Part 2: GPQA - FETCH Framework Evaluation
+
+GPQA is a dataset of 448 graduate-level multiple-choice questions testing scalable oversight: whether non-experts can verify expert reasoning through cheaper verification methods.
+
+### Dataset Overview
 
 **GPQA Dataset:**
 - 448 graduate-level multiple-choice questions (A, B, C, D)
-- 2 PhD-level experts per question, non-experts scored 34%, GPT-4 achieved 39.4%
-- Expert human subjects: 65% accuracy
-- Task: Select correct option based on reasoning steps
+- Topics: Biology, Physics, Chemistry
+- Expert baseline: 65% accuracy
+- Non-expert baseline (unrestricted web access): 34% accuracy
+- GPT-4 with internet: 39.4% accuracy
+- Task: Generate reasoning steps terminating with "The answer is <LETTER>"
 
-**Scalable Oversight:** GPQA tests whether non-experts can verify expert reasoning through cheaper verification methods.
+### FETCH Framework - 2×2 Ablation Study
 
-## FETCH Framework
-
-This implementation evaluates four FETCH configurations (2×2 ablation):
+This implementation evaluates four FETCH configurations:
 
 | Configuration | Semantic Merging | Variance Reduction | Description |
 |---|---|---|---|
-| **Baseline** | ✗ | ✗ | No optimization |
+| **Baseline** | ✗ | ✗ | No optimization (baseline) |
 | **FETCH-Merge** | ✓ | ✗ | Semantic state merging only |
 | **FETCH-VR** | ✗ | ✓ | Dual-verifier ensemble only |
-| **FETCH-Full** | ✓ | ✓ | Both optimizations |
+| **FETCH-Full** | ✓ | ✓ | Both optimizations (recommended) |
 
 ### Key FETCH Techniques
 
-**1. Semantic Merging (ESM)**
+**1. Semantic Merging (ESM - Reduces Over-Exploration)**
 - Clusters functionally equivalent reasoning steps using embedding similarity
 - Distance threshold: 0.15 (cosine distance)
 - Reduces search branching factor without losing solution paths
+- Uses sentence-transformers (SimCSE-Large) for embeddings
 
-**2. Variance Reduction (Dual Verifier Ensemble)**
-- Two different verifiers: Llama-3-8B (Verifier A) + Mistral-8B (Verifier B)
+**2. Variance Reduction (Dual Verifier Ensemble - Reduces Under-Exploration)**
+- Two complementary verifiers: Llama-3-8B (Verifier A) + Mistral-8B (Verifier B)
 - Scores averaged before beam selection: `score_ensemble = (scoreA + scoreB) / 2`
-- Model diversity provides regularization, reduces unreliable early scores
+- Model diversity provides regularization
+- Especially valuable early in search when individual scores are unreliable
 
-## Files
+### GPQA Files
 
 | File | Purpose |
 |------|---------|
-| `beamsearch_nomerge.py` | Baseline: no semantic merging, single verifier |
+| `beamsearch_nomerge.py` | Baseline: no merging, single verifier |
 | `beamsearch_nomerge_varreduce.py` | FETCH-VR: dual verifiers, no merging |
 | `beamsearch_merge_varreduce.py` | FETCH-Full: dual verifiers + semantic merging |
-| `verifier_ensemble_config.py` | Master config: supports both single + dual verifiers |
-| `server_verifier_a.py` | Verifier A (Llama-3-8B) - result-focused |
-| `server_verifier_b.py` | Verifier B (Mistral-8B) - diverse architecture |
-| `server_cluster.py` | ESM clustering server (semantic merging) |
-| `full_*.sh` | Snellius batch scripts for each configuration |
-| `eval_ranking.py` | Results analysis and ranking |
+| `verifier_ensemble_config.py` | Master config file |
+| `server_verifier_a.py` | Verifier A (Llama-3-8B) |
+| `server_verifier_b.py` | Verifier B (Mistral-8B) |
+| `server_cluster.py` | ESM clustering server |
+| `full_*.sh` | Batch scripts for each configuration |
+| `eval_ranking.py` | Results analysis and comparison |
 
-## Batch Sizes
+### Hyperparameter Ablations
 
-Three computational budgets were tested to assess scalability:
+Based on 25 validation problems:
 
-1. **Batch 1 (Validation):** 20 problems, shallow params (d=12, b=3, beam=4)
-2. **Batch 2 (Main Ablation):** 100 problems, medium params (d=15, b=3, beam=4)
-3. **Batch 3 (Extended Analysis):** 25 problems, high params (d=25, b=5, beam=5)
+| Config | Depth | Budget | Beam | Top-1 Acc | Coverage | Time (s) | Speedup |
+|---|---|---|---|---|---|---|---|
+| 8-3-4 | 8 | 3 | 4 | 36.0% | 92.0% | 2,313 | 3.5× |
+| 10-5-6 | 10 | 5 | 6 | 32.0% | 84.0% | 4,370 | 1.9× |
+| **12-3-4** | 12 | 3 | 4 | **60.0%** | 100.0% | 3,300 | 2.5× |
+| 16-2-3 | 16 | 2 | 3 | 32.0% | 68.0% | 2,399 | 3.4× |
+| **20-5-5** | 20 | 5 | 5 | **64.0%** | 100.0% | 8,100 | 1.0× |
+| **25-5-5** | 25 | 5 | 5 | **64.0%** | 100.0% | 8,091 | 1.0× |
 
-All of these experiments' outputs can be found in the folder **paper_experiments/**
+**Selected Configuration**: 25-5-5 (depth=25, budget=5, beam=5) for optimal accuracy.
 
-## Policy Model
+### Evaluation Batches
+
+Three computational budgets tested:
+
+1. **Batch 1 (Validation)**: 20 problems, shallow params (d=12, b=3, beam=4)
+2. **Batch 2 (Main Ablation)**: 100 problems, medium params (d=15, b=3, beam=4)
+3. **Batch 3 (Extended Analysis)**: 25 problems, high params (d=25, b=5, beam=5)
+
+**Results Location**: `paper_experiments/` folder
+
+**Note**: Constrained sample sizes (20-100 problems). Statistical significance requires 500+ problems with cross-validation.
+
+### Quick Start - GPQA
+
+#### Step 1: Infrastructure Setup
+
+Each configuration requires 4 GPUs on Snellius:
+- GPU 0: Policy server (vLLM, Llama-3.1-8B)
+- GPU 1: Verifier A (Llama-3-8B)
+- GPU 2: Verifier B (Mistral-8B)
+- GPU 3: ESM clustering (if using semantic merging)
+
+#### Step 2: Running Configurations
+
+**Option A: Batch Submission (Recommended)**
+
+```bash
+# Baseline (no optimization)
+sbatch full_nomerge_baseline.sh
+
+# FETCH-VR (dual verifiers only)
+sbatch full_nomerge_varreduce.sh
+
+# FETCH-Merge (semantic merging only)
+sbatch full_merge_gpqa.sh
+
+# FETCH-Full (both optimizations)
+sbatch full_merge_varreduce.sh
+```
+
+**Option B: tmux Helper Script (Testing Only)**
+
+```bash
+# Full FETCH-Full setup
+bash start_gpqa_tmux.sh merge_varreduce
+
+# Or specific configurations:
+bash start_gpqa_tmux.sh nomerge              # Baseline
+bash start_gpqa_tmux.sh nomerge_varreduce    # FETCH-VR
+bash start_gpqa_tmux.sh merge                # FETCH-Merge
+```
+
+#### Step 3: Results Analysis
+
+```python
+import pickle
+import pandas as pd
+
+# Load results from specific configuration
+trees = pickle.load(open("logs_<JOBID>/results.pkl", "rb"))
+
+# Calculate accuracy
+correct = sum(1 for tree in trees if tree.answer == tree.final_choice)
+accuracy = correct / len(trees)
+
+print(f"Accuracy: {accuracy:.1%}")
+print(f"Coverage: {sum(1 for t in trees if t.final_choice)}/{len(trees)}")
+```
+
+Compare configurations:
+```bash
+python eval_ranking.py \
+  --results results_nomerge.pkl results_varreduce.pkl results_merge.pkl results_full.pkl \
+  --output comparison.csv
+```
+
+### Expected Performance - GPQA
+
+| Configuration | Expected Accuracy | Speedup | Notes |
+|---|---|---|---|
+| Baseline | ~32-36% | 1.0× | Base policy only |
+| FETCH-VR | ~40-45% | 1.2× | Variance reduction helps |
+| FETCH-Merge | ~50-55% | 1.8× | Merging reduces branching |
+| FETCH-Full | ~55-60% | 2.0× | Combined benefits |
+
+### GPQA Policy Model
 
 **Vanilla Llama-3.1-8B-Instruct** (no fine-tuning)
 
@@ -212,126 +298,85 @@ Answer: <existing_reasoning>
 - Non-terminal step: "A reasoning fragment"
 - Terminal step: "The answer is <LETTER> <eos>"
 
-## Verifier Design
+### GPQA Verifier Design
 
-### Verifier A: Llama-3-8B
+**Verifier A: Llama-3-8B**
 - Scores reasoning quality based on question, options, and accumulated path
-- Result-focused: evaluates how well reasoning progresses toward correct answer
+- Result-focused: evaluates progression toward correct answer
 - Hidden state extraction: mean of last token's embeddings
 
-### Verifier B: Mistral-8B
-- Scores with same objective but different architecture
-- Model diversity introduces regularization
-- Diverse training structure captures orthogonal quality signals
+**Verifier B: Mistral-8B**
+- Same scoring objective, different architecture
+- Model diversity provides orthogonal quality signals
+- Reduces variance through architectural complementarity
 
-### Verifier Ensemble
-Scores combined via arithmetic mean:
+**Verifier Ensemble**
 ```
 score_ensemble = (scoreA + scoreB) / 2
 ```
 
-This reduces variance in value estimates, especially early in search when individual scores are unreliable.
+Averaging reduces variance, especially early in search when individual scores are unreliable.
 
-## Running on Snellius
+---
 
-### Setup
+## Setup (Both Projects)
 
-Each configuration requires 4 GPUs on Snellius:
-- GPU 0: Policy server (vLLM)
-- GPU 1: Verifier A server
-- GPU 2: Verifier B server  
-- GPU 3: ESM clustering server (semantic merging only)
-
-### Quick Run
-
-Submit a batch job:
+### Dependencies
 
 ```bash
-# Baseline (no optimization)
-sbatch full_nomerge_baseline.sh
-
-# FETCH-VR (dual verifiers only)
-sbatch full_nomerge_varreduce.sh
-
-# FETCH-Merge (semantic merging only)
-sbatch full_merge_gpqa.sh
-
-# FETCH-Full (both optimizations)
-sbatch full_merge_varreduce.sh
+pip install -r requirements_comprehensive.txt
 ```
 
-### Manual Run
+### Environment Variables
 
 ```bash
-# Terminal 1: Policy server (GPU 0)
-export CUDA_VISIBLE_DEVICES=0
-python -m vllm.entrypoints.openai.api_server \
-  --model meta-llama/Llama-3.1-8B-Instruct \
-  --port 8000
+# Game of 24 policy model
+export POLICY_MODEL_PATH="DanielRisss/Llama3-8b-go24"
 
-# Terminal 2: Verifier A (GPU 1)
-export CUDA_VISIBLE_DEVICES=1
-uvicorn server_verifier_a:app --host 0.0.0.0 --port 8002
-
-# Terminal 3: Verifier B (GPU 2)
-export CUDA_VISIBLE_DEVICES=2
-uvicorn server_verifier_b:app --host 0.0.0.0 --port 8003
-
-# Terminal 4: ESM server (GPU 3, if using semantic merging)
-export CUDA_VISIBLE_DEVICES=3
-uvicorn server_cluster:app --host 0.0.0.0 --port 8004
-
-# Terminal 5: Run beam search
-python beamsearch_merge_varreduce.py
+# Optional: override server endpoints
+export POLICY_SERVER="http://127.0.0.1:8000"
+export VERIFIER_1="http://127.0.0.1:8002/predict"
+export VERIFIER_2="http://127.0.0.1:8003/predict"
 ```
 
-## Results Analysis
+---
 
-After runs complete, analyze results, compare configurations with eval_ranking.py:
-```bash
-python eval_ranking.py \
-  --results results_nomerge.pkl results_varreduce.pkl results_merge.pkl results_full.pkl \
-  --output comparison.csv
+## Code Organization
+
+**Game of 24 Pipeline**:
+```
+train_policy.py → fine-tuned model → policy_inference.py 
+  ↓
+vllm_policy_server.py (:8000)
+  ↓
+beamsearch_full_infrastructure.py ← server.py (:8002, :8003)
 ```
 
-## Expected Performance
+**GPQA Pipeline**:
+```
+Vanilla Llama-3.1-8B → vLLM policy server (:8000)
+  ↓
+beamsearch_[config].py ← Verifier A (:8002) + Verifier B (:8003) + ESM (:8004)
+```
 
-Based on hyperparameter ablations:
+---
 
-| Configuration | Expected Accuracy | Speedup | Notes |
-|---|---|---|---|
-| Baseline (nomerge) | ~32-36% | 1.0× | Base policy only |
-| FETCH-VR | ~40-45% | 1.2× | Variance reduction helps |
-| FETCH-Merge | ~50-55% | 1.8× | Merging reduces branch. |
-| FETCH-Full | ~55-60% | 2.0× | Combined benefits |
+## Key Implementation Notes
 
-*Note: These are exploratory estimates; actual results depend on dataset batch and hyperparameters.*
+1. **Scalable Oversight (GPQA)**: Tests whether cheaper multi-model verification can validate expert reasoning without direct expert review.
 
-## Key Configuration Parameters
+2. **Dual Verifiers**: Different models (Llama + Mistral) capture complementary reasoning signals, reducing early-search unreliability.
 
-- `LIMIT`: Maximum search depth (25 for full evaluation)
-- `BUDGET`: Policy calls per frontier state (5 for full eval)
-- `BEAM`: Beam width (5 for full eval)
-- `TEMPERATURE`: Policy sampling temp (0.8 standard)
-- `DISTANCE`: ESM clustering threshold (0.15 cosine distance)
+3. **Semantic Merging**: Consolidates redundant reasoning steps (e.g., different ways to express the same idea) without losing solutions.
 
-## Important Notes
+4. **Capacity-Bound Tasks**: Game of 24 results suggest some reasoning tasks are fundamentally limited by model size rather than search strategy.
 
-1. **Scalable Oversight:** GPQA tests whether cheaper verification (Mistral + Llama) can validate expert reasoning without direct expert review.
-
-2. **Dual Verifiers:** Two models capture complementary reasoning quality signals:
-   - Llama: Often more capable at technical reasoning
-   - Mistral: Different training, orthogonal insights
-
-3. **Semantic Merging:** Consolidates redundant reasoning steps (e.g., different ways of saying "analyze the data") without losing solutions.
-
-4. **Constrained Sample Sizes:** 20-100 problems per batch. Statistical significance would require 500+ problems and cross-validation.
-
+---
 
 ## Citation
 
 ```bibtex
-@article{game24_fetch,
+@article{ris2025fetch,
   title={Cross-Domain Evaluation of the FETCH Framework for Tree-of-Thought LLM Reasoning},
   author={Ris, Daniël and Ilaş, Armand and Zeinstra, Tim},
   year={2025},
@@ -351,4 +396,10 @@ Based on hyperparameter ablations:
   journal={arXiv preprint arXiv:2502.05095},
   year={2025}
 }
+```
 
+---
+
+## Acknowledgments
+
+This research was conducted at Eindhoven University of Technology using the Snellius HPC cluster. We thank the TU/e AI Research Group for computational resources and support.
